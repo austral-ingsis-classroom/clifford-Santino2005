@@ -1,3 +1,11 @@
 package edu.austral.ingsis.clifford;
 
-public interface FileSystem {}
+import java.util.List;
+
+public interface FileSystem {
+
+    public String getName();
+    public String getPath();
+    public boolean isDir();
+
+}
