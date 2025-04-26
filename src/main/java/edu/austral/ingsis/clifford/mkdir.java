@@ -15,14 +15,20 @@ public class mkdir implements Command{
         }
         else{
             Directory newDir = new Directory(dir[0], dirState.getCurrent());
-            FileManager state = null;
-            for(FileSystem data: dirState.getCurrent().listContent()){
-                if(!data.getName().equals(dir[0])){
-                    state = dirState.setDir(newDir);
-                    return new Result(state ,dir[0] + "created");
-                }
-            }
-            return new Result(state, dir[0] + "already created");
+            return find(dirState, dir[0], newDir);
+
+
         }
+    }
+    private Result find(FileManager dirState, String dir, Directory newDir){
+        for(FileSystem data: dirState.getCurrent().listContent()){
+            if(!data.getName().equals(dir)){
+                return new Result(dirState.setDir(newDir),dir + " directory created");
+            }
+        }
+        if(dirState.getCurrent().listContent() == null){
+            return new Result(dirState.setDir(newDir), dir + "directory created");
+        }
+        return new Result(dirState, dir + " directory already created");
     }
 }

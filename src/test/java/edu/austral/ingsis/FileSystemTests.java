@@ -5,20 +5,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FileSystemTests {
 
-  private final FileSystemRunner runner = commands -> List.of();
+  private FileSystemRunner runner;
+  @BeforeEach
+  void setUp(){
+    runner = new FileSystemRun();
+  }
 
   private void executeTest(List<Map.Entry<String, String>> commandsAndResults) {
     final List<String> commands = commandsAndResults.stream().map(Map.Entry::getKey).toList();
     final List<String> expectedResult =
-        commandsAndResults.stream().map(Map.Entry::getValue).toList();
+            commandsAndResults.stream().map(Map.Entry::getValue).toList();
 
     final List<String> actualResult = runner.executeCommands(commands);
 
-    assertEquals(expectedResult, actualResult);
+    for (int i = 0; i < expectedResult.size(); i++) {
+      assertEquals(expectedResult.get(i), actualResult.get(i),
+              "Command error: " + commands.get(i));
+    }
   }
 
   @Test
