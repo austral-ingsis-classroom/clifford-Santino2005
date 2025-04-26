@@ -1,19 +1,28 @@
 package edu.austral.ingsis.clifford;
 
+import java.util.Optional;
+
 public class cd implements Command {
     @Override
     public Result execute(FileManager dirState, String[] path) {
+        if (path == null || path.length == 0 || path[0].isEmpty()) {
+            return new Result(dirState, dirState.getCurrent().getPath());
+        }
         if (path.length > 1) {
             return new Result(dirState, "only use one path");
         }
-        if (path[0].equals("..")) {
+        return cases(dirState, path[0]);
+    }
+
+    private Result cases(FileManager dirState, String path) {
+        if (path.equals("..")) {
             return handleParentDir(dirState);
-        } else if (path[0].equals(".")) {
+        } else if (path.equals(".")) {
             return new Result(dirState, dirState.getCurrent().getPath());
-        } else if (path[0].contains("/")) {
-            return handlePath(dirState, path[0]);
+        } else if (path.contains("/")) {
+            return handlePath(dirState, path);
         }
-        return handleSimplePath(dirState, path[0]);
+        return handleSimplePath(dirState, path);
     }
 
     private Result handleParentDir(FileManager dirState) {
@@ -21,21 +30,20 @@ public class cd implements Command {
         if (parent == null) {
             return new Result(dirState, dirState.getCurrent().getPath());
         }
-        return new Result(dirState.setDir(parent), "moved to directory '/'");
+        return new Result(dirState.setDir(parent), "moved to directory /");
     }
 
     private Result handlePath(FileManager dirState, String path) {
-        Directory currentDir = getStartingDirectory(dirState, path);
+        Directory currentDir = path.startsWith("/") ?
+                dirState.getRoot() : dirState.getCurrent();
         String[] parts = path.split("/");
         int startIndex = getStartIndex(path, parts);
-        return goTo(dirState, parts, currentDir, startIndex);
-    }
 
-    private Directory getStartingDirectory(FileManager dirState, String path) {
-        if (path.startsWith("/")) {
-            return dirState.getRoot();
+        if (path.equals("/")) {
+            return new Result(dirState.setDir(dirState.getRoot()), "moved to directory /");
         }
-        return dirState.getCurrent();
+
+        return goTo(dirState, parts, currentDir, startIndex);
     }
 
     private int getStartIndex(String path, String[] parts) {
@@ -45,63 +53,76 @@ public class cd implements Command {
         return 0;
     }
 
-    private Result goTo(FileManager dirState, String[] parts,
-                        Directory currentDir, int startIndex) {
-        Directory targetDir = goToDir(parts, currentDir, startIndex);
-        if (targetDir == null) {
+    private Result goTo(FileManager dirState, String[] parts, Directory currentDir, int startIndex) {
+        if (parts.length == 0 || startIndex >= parts.length) {
+            return new Result(dirState.setDir(currentDir), "moved to directory /");
+        }
+
+        Optional<Directory> targetDir = findTargetDir(parts, currentDir, startIndex);
+        if (targetDir.isEmpty()) {
             return new Result(dirState, "No such file or directory " + String.join("/", parts));
         }
-        String dirName = parts[parts.length - 1];
-        return new Result(dirState.setDir(targetDir), "moved to directory '" + dirName + "'");
+
+        String dirName = getLastValidPathPart(parts);
+        return new Result(dirState.setDir(targetDir.get()),
+                "moved to directory '" + dirName + "'");
     }
 
-    private Directory goToDir(String[] parts, Directory currentDir, int startIndex) {
+    private String getLastValidPathPart(String[] parts) {
+        for (int i = parts.length - 1; i >= 0; i--) {
+            if (!parts[i].isEmpty()) {
+                return parts[i];
+            }
+        }
+        return "/";
+    }
+
+    private Optional<Directory> findTargetDir(String[] parts, Directory currentDir, int startIndex) {
         Directory result = currentDir;
         for (int i = startIndex; i < parts.length; i++) {
-            result = goToNextDir(result, parts[i]);
-            if (result == null) return null;
+            Optional<Directory> next = getNextDir(result, parts[i]);
+            if (next.isEmpty()) {
+                return Optional.empty();
+            }
+            result = next.get();
         }
-        return result;
+        return Optional.of(result);
     }
 
-    private Directory goToNextDir(Directory currentDir, String part) {
+    private Optional<Directory> getNextDir(Directory currentDir, String part) {
         if (part.equals("..")) {
-            if (currentDir.getParent() != null) {
-                return currentDir.getParent();
-            }
-            return currentDir;
+            return Optional.ofNullable(currentDir.getParent())
+                    .or(() -> Optional.of(currentDir));
         } else if (part.isEmpty() || part.equals(".")) {
-            return currentDir;
+            return Optional.of(currentDir);
         }
+
         return findSubDir(currentDir, part);
     }
 
-    private Directory findSubDir(Directory currentDir, String part) {
+    private Optional<Directory> findSubDir(Directory currentDir, String part) {
         for (FileSystem item : currentDir.listContent()) {
             if (item.getName().equals(part) && item.isDir()) {
-                return (Directory) item;
+                return Optional.of((Directory) item);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private Result handleSimplePath(FileManager dirState, String path) {
-        Directory dir = findSubDir(dirState.getCurrent(), path);
-        if (dir != null) {
-            return new Result(dirState.setDir(dir), "moved to directory " + path );
+        Optional<Directory> dir = findSubDir(dirState.getCurrent(), path);
+        if (dir.isPresent()) {
+            return new Result(dirState.setDir(dir.get()), "moved to directory " + path);
         }
-        return handleNotFoundPath(dirState, path);
-    }
 
-    private Result handleNotFoundPath(FileManager dirState, String path) {
         if (isFile(dirState.getCurrent(), path)) {
             return new Result(dirState, path + " is a file");
         }
-        return new Result(dirState,  path + " directory does not exist");
+        return new Result(dirState, path + " directory does not exist");
     }
 
-    private boolean isFile(Directory dirState, String name) {
-        for (FileSystem item : dirState.listContent()) {
+    private boolean isFile(Directory dir, String name) {
+        for (FileSystem item : dir.listContent()) {
             if (item.getName().equals(name) && !item.isDir()) {
                 return true;
             }
