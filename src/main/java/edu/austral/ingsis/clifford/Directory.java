@@ -18,7 +18,7 @@ public class Directory implements FileSystem{
         this.content = content;
     }
     public Directory add(FileSystem element){
-        List<FileSystem> newContent = new ArrayList<>();
+        List<FileSystem> newContent = new ArrayList<>(this.content);
         newContent.add(element);
         return new Directory(this.name, this.parent, newContent);
     }

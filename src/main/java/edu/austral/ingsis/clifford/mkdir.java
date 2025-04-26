@@ -22,13 +22,11 @@ public class mkdir implements Command{
     }
     private Result find(FileManager dirState, String dir, Directory newDir){
         for(FileSystem data: dirState.getCurrent().listContent()){
-            if(!data.getName().equals(dir)){
-                return new Result(dirState.setDir(newDir),dir + " directory created");
+            if(data.getName().equals(dir)){
+                return new Result(dirState,dir + " directory already created");
             }
         }
-        if(dirState.getCurrent().listContent() == null){
-            return new Result(dirState.setDir(newDir), dir + "directory created");
-        }
-        return new Result(dirState, dir + " directory already created");
+        Directory updateDir = dirState.getCurrent().add(newDir);
+        return new Result(dirState.setDir(updateDir), dir + " directory created");
     }
 }

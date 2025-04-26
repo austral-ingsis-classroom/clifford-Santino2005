@@ -1,8 +1,14 @@
 package edu.austral.ingsis;
 
-
 import edu.austral.ingsis.clifford.Cli;
 import edu.austral.ingsis.clifford.FileManager;
+import edu.austral.ingsis.clifford.Result;
+import edu.austral.ingsis.clifford.pwd;
+import edu.austral.ingsis.clifford.mkdir;
+import edu.austral.ingsis.clifford.touch;
+import edu.austral.ingsis.clifford.rm;
+import edu.austral.ingsis.clifford.ls;
+import edu.austral.ingsis.clifford.cd;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,31 +39,40 @@ public class FileSystemRun implements FileSystemRunner {
                 args = new String[]{""};
             }
 
-            String result;
+            // Creamos una clase para manejar comandos directamente
+            Result result;
             switch (cmd) {
                 case "cd":
-                    result = cli.cd(args);
+                    cd cdCommand = new cd();
+                    result = cdCommand.execute(fileManager, args);
                     break;
                 case "ls":
-                    result = cli.ls(args);
+                    ls lsCommand = new ls();
+                    result = lsCommand.execute(fileManager, args);
                     break;
                 case "mkdir":
-                    result = cli.mkdir(args);
+                    mkdir mkdirCommand = new mkdir();
+                    result = mkdirCommand.execute(fileManager, args);
                     break;
                 case "touch":
-                    result = cli.touch(args);
+                    touch touchCommand = new touch();
+                    result = touchCommand.execute(fileManager, args);
                     break;
                 case "rm":
-                    result = cli.rm(args);
+                    rm rmCommand = new rm();
+                    result = rmCommand.execute(fileManager, args);
                     break;
                 case "pwd":
-                    result = cli.pwd();
+                    pwd pwdCommand = new pwd();
+                    result = pwdCommand.execute(fileManager, args);
                     break;
                 default:
-                    result = "Command not recognized: " + cmd;
+                    result = new Result(fileManager, "Command not recognized: " + cmd);
             }
 
-            results.add(result);
+            fileManager = result.getFileManager();
+            cli = new Cli(fileManager);
+            results.add(result.getMessage());
         }
 
         return results;
