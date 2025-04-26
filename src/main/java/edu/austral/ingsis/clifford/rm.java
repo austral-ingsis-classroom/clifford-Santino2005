@@ -1,15 +1,47 @@
 package edu.austral.ingsis.clifford;
-public class rm implements Command{
+public class rm implements Command {
     @Override
-    public String execute(FileManager dirState, String[] parent) {
-        for(FileSystem data: dirState.getCurrent().listContent()){
-            if(data.getName().equals(parent[0]) && !data.isDir()){
-                dirState.getCurrent().listContent().remove(data);
+    public Result execute(FileManager dirState, String[] parent) {
+        FileSystem item = getItem(dirState,parent,null);
+        if (item == null) {
+            return new Result(dirState, "No such file or directory");
+        } else if (parent[0].equals("--recursive")) {
+            return recursiveCase(dirState, parent[1], item);
+        } else if (item.isDir()) {
+            return new Result(dirState, parent[0] + "use --recursive to delete a Directory");
+        }
+        Directory newDir = dirState.getCurrent().remove(item);
+        return new Result(dirState.setDir(newDir), "removed");
+    }
+
+    private Result recursiveCase(FileManager dirState, String parent, FileSystem item) {
+        if (parent.isEmpty()) {
+            Directory childDir = dirState.getCurrent();
+            while (childDir != null) {
+                FileSystem items = childDir;
+                childDir = childDir.getParent();
+                if (childDir != null) {
+                    childDir.remove(items);
+                }
             }
-            else if(data.getName().equals(parent[0]) && data.isDir()){
-                return parent + "is a directory, use --recursive";
+            FileManager newDir = dirState.setDir(childDir);
+            return new Result(newDir, "all deleted");
+        } else {
+            Directory newDir = dirState.getCurrent().remove(item);
+            return new Result(dirState.setDir(newDir),"deleted"+ parent);
+        }
+    }
+    private FileSystem getItem(FileManager dirState, String[] parent, FileSystem item){
+        for (FileSystem data : dirState.getCurrent().listContent()) {
+            if (data.getName().equals(parent[1])) {
+                item = data;
+                break;
+            }
+            else if (data.getName().equals(parent[0])) {
+                item = data;
+                break;
             }
         }
-        return " cannot remove" + parent + ": No such file or directory";
+        return item;
     }
 }

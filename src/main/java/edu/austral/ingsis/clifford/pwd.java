@@ -1,10 +1,7 @@
 package edu.austral.ingsis.clifford;
-
-import java.util.List;
-
 public class pwd implements Command{
     @Override
-    public String execute(FileManager command, String[] content) {
-        return null;
+    public Result execute(FileManager dir, String[] content) {
+        return new Result(dir,dir.getCurrent().getPath());
     }
 }

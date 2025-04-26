@@ -8,18 +8,27 @@ public class Directory implements FileSystem{
     private String name;
     private Directory parent;
 
-    public Directory(String name, Directory pattern){
+    public Directory(String name, Directory parent){
         this.name = name;
-        this.parent = pattern;
+        this.parent = parent;
     }
-    public void add(FileSystem element){
-        content.add(element);
+    private Directory(String name, Directory parent, List<FileSystem> content){
+        this.name = name;
+        this.parent = parent;
+        this.content = content;
+    }
+    public Directory add(FileSystem element){
+        List<FileSystem> newContent = new ArrayList<>();
+        newContent.add(element);
+        return new Directory(this.name, this.parent, newContent);
     }
     public Directory getParent(){
         return this.parent;
     }
-    public void remove(FileSystem element){
-        content.remove(element);
+    public Directory remove(FileSystem element){
+        List<FileSystem> newContent = new ArrayList<>(this.content);
+        newContent.remove(element);
+        return new Directory(this.name, this.parent, newContent);
     }
     public boolean isDir(){
         return true;

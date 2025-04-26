@@ -8,13 +8,18 @@ public class FileManager {
         this.root = new Directory("",null);
         this.current = root;
     }
+    private FileManager(Directory root, Directory current) {
+        this.root = root;
+        this.current = current;
+    }
     public Directory getRoot(){
         return root;
     }
     public Directory getCurrent(){
         return current;
     }
-    public void setDir(Directory go){
-        current = go;
+    public FileManager setDir(Directory go){
+        return new FileManager(this.root, go);
     }
+
 }
