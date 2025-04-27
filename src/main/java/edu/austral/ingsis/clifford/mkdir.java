@@ -16,8 +16,6 @@ public class mkdir implements Command{
         else{
             Directory newDir = new Directory(dir[0], dirState.getCurrent());
             return find(dirState, dir[0], newDir);
-
-
         }
     }
     private Result find(FileManager dirState, String dir, Directory newDir){

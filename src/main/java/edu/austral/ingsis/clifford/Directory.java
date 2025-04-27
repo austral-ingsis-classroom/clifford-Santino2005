@@ -12,7 +12,7 @@ public class Directory implements FileSystem{
         this.name = name;
         this.parent = parent;
     }
-    private Directory(String name, Directory parent, List<FileSystem> content){
+    Directory(String name, Directory parent, List<FileSystem> content){
         this.name = name;
         this.parent = parent;
         this.content = content;
