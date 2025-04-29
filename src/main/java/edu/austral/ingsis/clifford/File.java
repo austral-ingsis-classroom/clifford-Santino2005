@@ -2,8 +2,8 @@ package edu.austral.ingsis.clifford;
 
 public class File implements FileSystem {
 
-    String name;
-    Directory parent;
+    private final String name;
+    private final Directory parent;
 
     public File(String name, Directory dir){
         this.name = name;

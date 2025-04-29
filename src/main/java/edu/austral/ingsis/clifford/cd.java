@@ -23,23 +23,34 @@ public class cd implements Command {
     }
 
     private Result handleParentDir(FileManager dirState) {
-        FileManager parent = dirState.setDir(dirState.getCurrent().getParent());
-        if (parent == null) {
-            FileManager newParent = dirState.setDir(dirState.getRoot());
-            return new Result(newParent, "moved to directory " + newParent.getCurrent().getPath());
+        if(dirState.getCurrent().getParent() == null){
+            return new Result(dirState, "moved to directory " + dirState.getCurrent().getPath());
         }
-        return new Result(parent, "moved to directory /");
-
-
+        Directory parentDir = new Directory(dirState.getCurrent().getParent().getName(),
+                dirState.getCurrent().getParent(), dirState.getCurrent().getParent().listContent());
+        FileManager parent = new FileManager(dirState.getRoot(), parentDir);
+        return new Result(parent, "moved to directory " + parent.getCurrent().getPath());
     }
-
     private Result handlePath(FileManager dirState, String path) {
         String[] parts = path.split("/");
+        if(parts.length == 0){
+            return startFromRoot(dirState);
+        }
         return goTo(dirState, parts);
     }
 
+    private Result startFromRoot(FileManager dirState){
+        Directory current = dirState.getCurrent();
+
+        while(current.getPath() != null){
+            current = current.getParent().getParent();
+        }
+        FileManager result = new FileManager(dirState.getRoot(), current);
+        return new Result(result, "moved to directory " + result.getCurrent().getPath());
+    }
+
     private Result goTo(FileManager dirState, String[] parts) {
-        FileManager result = dirState.setDir(dirState.getCurrent());
+        FileManager result = new FileManager(dirState.getRoot(), dirState.getCurrent());
         for(String part: parts){
             for (FileSystem data: result.getCurrent().listContent()){
                 if(data.getName().equals(part) && data.isDir()){
@@ -48,28 +59,7 @@ public class cd implements Command {
                 }
             }
         }
-        return new Result(result, "moved to directory " + result.getCurrent().getPath());
-    }
-
-    private Directory goToDir(String[] parts, Directory currentDir) {
-        Directory result = currentDir;
-        for (int i = 1; i < parts.length; i++) {
-            result = goToNextDir(result, parts[i]);
-            if (result == null) return null;
-        }
-        return result;
-    }
-
-    private Directory goToNextDir(Directory currentDir, String part) {
-        if (part.equals("..")) {
-            if (currentDir.getParent() != null) {
-                return currentDir.getParent();
-            }
-            return currentDir;
-        } else if (part.isEmpty() || part.equals(".")) {
-            return currentDir;
-        }
-        return findSubDir(currentDir, part);
+        return new Result(result, "moved to directory " + result.getCurrent().getName());
     }
 
     private Directory findSubDir(Directory currentDir, String part) {

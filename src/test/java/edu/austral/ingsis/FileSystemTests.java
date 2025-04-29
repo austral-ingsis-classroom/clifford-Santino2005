@@ -99,7 +99,13 @@ public class FileSystemTests {
 
   @Test
   void test6() {
-    executeTest(List.of(entry("cd ..", "moved to directory /")));
+    executeTest(List.of(entry(
+            "cd ..", "moved to directory /"),
+            entry("mkdir pepito", "pepito directory created"),
+            entry("cd pepito", "moved to directory pepito"),
+            entry("cd ..", "moved to directory /"),
+            entry("ls", " a"),
+            entry("cd pepito", "moved to directory pepito")));
   }
 
   @Test

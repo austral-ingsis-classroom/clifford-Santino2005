@@ -2,7 +2,7 @@ package edu.austral.ingsis.clifford;
 
 public class Cli {
 
-    private FileManager fm;
+    private final FileManager fm;
 
     public Cli(FileManager fm) {
         this.fm = fm;

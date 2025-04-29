@@ -1,16 +1,17 @@
 package edu.austral.ingsis.clifford;
 
 import java.util.Collections;
+import java.util.List;
 
 public class FileManager {
-    private Directory root;
-    private Directory current;
+    private final Directory root;
+    private final Directory current;
     private Cli cli;
     public FileManager(){
         this.root = new Directory("",null, Collections.emptyList());
         this.current = root;
     }
-    private FileManager(Directory root, Directory current) {
+    FileManager(Directory root, Directory current) {
         this.root = root;
         this.current = current;
     }

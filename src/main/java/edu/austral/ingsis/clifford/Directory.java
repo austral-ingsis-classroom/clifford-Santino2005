@@ -1,12 +1,13 @@
 package edu.austral.ingsis.clifford;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Directory implements FileSystem{
     private List<FileSystem> content = new ArrayList<>();
-    private String name;
-    private Directory parent;
+    private final String name;
+    private final Directory parent;
 
     public Directory(String name, Directory parent){
         this.name = name;
@@ -15,7 +16,7 @@ public class Directory implements FileSystem{
     Directory(String name, Directory parent, List<FileSystem> content){
         this.name = name;
         this.parent = parent;
-        this.content = content;
+        this.content = Collections.unmodifiableList(content);
     }
     public Directory add(FileSystem element){
         List<FileSystem> newContent = new ArrayList<>(this.content);
