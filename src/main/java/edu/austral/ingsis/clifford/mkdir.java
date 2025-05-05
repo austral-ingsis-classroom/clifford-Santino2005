@@ -3,28 +3,20 @@ package edu.austral.ingsis.clifford;
 public class mkdir implements Command{
 
     @Override
-    public Result execute(FileManager dirState, String[] dir) {
-        if(dir.length > 1){
-            return new Result(dirState ,"only one parameter");
-        }
-        else if(dir[0].equals("/")){
-            return new Result( dirState,dir[0] + "cant have /");
-        }
-        else if(dir[0].contains(" ")){
-            return new Result(dirState,dir[0] + "have spaces between");
-        }
-        else{
-            Directory newDir = new Directory(dir[0], dirState.getCurrent());
-            return find(dirState, dir[0], newDir);
-        }
+    public Result execute(FileManager dirState, String[] args) {
+        if (args.length != 1) return new Result(dirState, "only one parameter");
+        if (args[0].equals("/")) return new Result(dirState, args[0] + " can't have /");
+        if (args[0].contains(" ")) return new Result(dirState, args[0] + " have spaces between");
+
+        Directory newDir = new Directory(args[0], dirState.getCurrent());
+        return find(dirState, args[0], newDir);
     }
-    private Result find(FileManager dirState, String dir, Directory newDir){
-        for(FileSystem data: dirState.getCurrent().listContent()){
-            if(data.getName().equals(dir)){
-                return new Result(dirState,dir + " directory already created");
-            }
+
+    private Result find(FileManager dirState, String name, Directory newDir) {
+        if (dirState.getCurrent().hasChild(name)) {
+            return new Result(dirState, name + " directory already exists");
         }
-        Directory updateDir = dirState.getCurrent().add(newDir);
-        return new Result(dirState.setDir(updateDir), dir + " directory created");
+        Directory updatedDir = dirState.getCurrent().add(newDir);
+        return new Result(dirState.updateTree(updatedDir), name + " directory created");
     }
 }

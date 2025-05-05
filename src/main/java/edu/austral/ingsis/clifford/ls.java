@@ -9,18 +9,26 @@ public class ls implements Command {
 
     @Override
     public Result execute(FileManager dirState, String[] parent) {
-        String[] split = parent[0].split("=");
-       if(split[0].equals("--ord")){
-            if(split[1].equals("asc")){
-                return new Result(dirState,formatListContent(getSortedContent(dirState.getCurrent().listContent(),true)));
-            } else if(split[1].equals("desc")) {
+        if(parent.length == 0){
+            return new Result(dirState, formatListContent(dirState.getCurrent().listContent()));
+        }
+        else {
+            String[] split = parent[0].split("=");
+            return Conditions(split, dirState);
+        }
+    }
+    private Result Conditions(String[] split, FileManager dirState){
+        if (split[0].equals("--ord")) {
+            if (split[1].equals("asc")) {
+                return new Result(dirState, formatListContent(getSortedContent(dirState.getCurrent().listContent(), true)));
+            } else if (split[1].equals("desc")) {
                 return new Result(dirState, formatListContent(getSortedContent(dirState.getCurrent().listContent(), false)));
-            }else{
-                return new Result(dirState,"use asc or desc");
+            } else {
+                return new Result(dirState, "use asc or desc");
             }
         }
         else{
-            return new Result(dirState, formatListContent(dirState.getCurrent().listContent()));
+            return new Result(dirState, "use --ord");
         }
     }
     private List<FileSystem> getSortedContent(List<FileSystem> content, boolean ascending) {
@@ -34,12 +42,13 @@ public class ls implements Command {
         return sorted;
     }
     private String formatListContent(List<FileSystem> content) {
-        if (content.isEmpty()) {
+        if (content.isEmpty()){
             return "";
         }
         return content.stream()
                 .map(FileSystem::getName)
                 .collect(Collectors.joining(" "));
+
     }
 
 }

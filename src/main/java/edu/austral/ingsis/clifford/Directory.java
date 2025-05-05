@@ -3,6 +3,7 @@ package edu.austral.ingsis.clifford;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Directory implements FileSystem{
     private List<FileSystem> content = new ArrayList<>();
@@ -49,5 +50,11 @@ public class Directory implements FileSystem{
         }
         String parentPath = parent.getPath();
         return parentPath.equals("/") ? "/" + name : parentPath + "/" + name;
+    }
+    public boolean hasChild(String name) {
+        for (FileSystem fs : content) {
+            if (fs.getName().equals(name)) return true;
+        }
+        return false;
     }
 }

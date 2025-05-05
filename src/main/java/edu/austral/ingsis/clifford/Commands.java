@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class Commands {
     private final Map<String, Command> commandMap = new HashMap<>();
-    private final String basePackage = "edu.austral.ingsis.clifford.commands";
+    private final String basePackage = "edu.austral.ingsis.clifford";
 
     public Command getCommand(String name) {
         if (commandMap.containsKey(name)) {
@@ -13,7 +13,7 @@ public class Commands {
         }
 
         try {
-            String className = basePackage + "." + "name";
+            String className = basePackage + "." + name;
             Class<?> clazz = Class.forName(className);
             Command command = (Command) clazz.getDeclaredConstructor().newInstance();
             commandMap.put(name, command);
@@ -21,10 +21,5 @@ public class Commands {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private String capitalize(String str) {
-        if (str == null || str.isEmpty()) return str;
-        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 }
