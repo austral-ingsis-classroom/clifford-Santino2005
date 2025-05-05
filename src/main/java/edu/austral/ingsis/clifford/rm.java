@@ -1,5 +1,6 @@
 package edu.austral.ingsis.clifford;
 public class rm implements Command {
+
     @Override
     public Result execute(FileManager dirState, String[] parent) {
         FileSystem item = getItem(dirState,parent,null);

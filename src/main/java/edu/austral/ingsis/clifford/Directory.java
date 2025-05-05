@@ -10,6 +10,7 @@ public class Directory implements FileSystem{
     private final Directory parent;
 
     public Directory(String name, Directory parent){
+
         this.name = name;
         this.parent = parent;
     }

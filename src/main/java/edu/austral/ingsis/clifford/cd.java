@@ -1,6 +1,9 @@
 package edu.austral.ingsis.clifford;
 
 public class cd implements Command {
+
+    private final Commands cd = new Commands();
+
     @Override
     public Result execute(FileManager dirState, String[] path) {
         if (path == null || path.length == 0 || path[0].isEmpty()) {
@@ -74,7 +77,9 @@ public class cd implements Command {
     private Result handleSimplePath(FileManager dirState, String path) {
         Directory dir = findSubDir(dirState.getCurrent(), path);
         if (dir != null) {
-            return new Result(dirState.setDir(dir), "moved to directory " + path );
+            Directory Dir2 = new Directory(dir.getName(), dirState.getCurrent());
+            FileManager newDir = new FileManager(dirState.getRoot(), Dir2);
+            return new Result(newDir, "moved to directory " + path );
         }
         return handleNotFoundPath(dirState, path);
     }
