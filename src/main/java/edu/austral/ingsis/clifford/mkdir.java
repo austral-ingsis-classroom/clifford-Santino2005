@@ -1,22 +1,38 @@
 package edu.austral.ingsis.clifford;
 
-public class mkdir implements Command{
+import java.util.Optional;
 
+public class mkdir implements Command {
     @Override
-    public Result execute(FileManager dirState, String[] args) {
-        if (args.length != 1) return new Result(dirState, "only one parameter");
-        if (args[0].equals("/")) return new Result(dirState, args[0] + " can't have /");
-        if (args[0].contains(" ")) return new Result(dirState, args[0] + " have spaces between");
-
-        Directory newDir = new Directory(args[0], dirState.getCurrent());
-        return find(dirState, args[0], newDir);
+    public Result execute(FileManager fm, String[] args) {
+        if (args.length != 1) return new Result(fm, "mkdir needs 1 arg");
+        String name = args[0];
+        if (name.contains("/") || name.contains(" "))
+            return new Result(fm, "invalid name: " + name);
+        if (fm.getCurrent().getByName(name).isPresent())
+            return new Result(fm, "dir already exists: " + name);
+        Directory added = fm.getCurrent().add(new Directory(name, fm.getCurrent()));
+        Directory newRoot = rebuild(fm.getRoot(), fm.getCurrent(), added);
+        Directory newCurrent = find(newRoot, fm.getCurrent().getPath());
+        return new Result(new FileManager(newRoot, newCurrent), name + " directory created");
     }
 
-    private Result find(FileManager dirState, String name, Directory newDir) {
-        if (dirState.getCurrent().hasChild(name)) {
-            return new Result(dirState, name + " directory already exists");
-        }
-        Directory updatedDir = dirState.getCurrent().add(newDir);
-        return new Result(dirState.updateTree(updatedDir), name + " directory created");
+    private Directory rebuild(Directory root, Directory target, Directory updated) {
+        if (root.equals(target)) return updated;
+        var updatedChildren = root.listContent().stream()
+                .map(c -> c.equals(target) ? updated :
+                        c instanceof Directory ? rebuild((Directory) c, target, updated) : c)
+                .toList();
+        return new Directory(root.getName(), root.getParent(), updatedChildren);
+    }
+
+    private Directory find(Directory root, String path) {
+        if (path.equals("/") || path.isEmpty()) return root;
+        String[] parts = path.split("/");
+        Directory curr = root;
+        for (String part : parts)
+            if (!part.isEmpty())
+                curr = (Directory) curr.getByName(part).orElseThrow();
+        return curr;
     }
 }

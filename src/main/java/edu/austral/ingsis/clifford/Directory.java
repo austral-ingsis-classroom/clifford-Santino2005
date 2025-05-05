@@ -49,12 +49,10 @@ public class Directory implements FileSystem{
             return "/";
         }
         String parentPath = parent.getPath();
-        return parentPath.equals("/") ? "/" + name : parentPath + "/" + name;
+        return parentPath.equals("/") ?  name : parentPath + "/" + name;
     }
-    public boolean hasChild(String name) {
-        for (FileSystem fs : content) {
-            if (fs.getName().equals(name)) return true;
-        }
-        return false;
+    public Optional<FileSystem> getByName(String name) {
+        return content.stream().filter(c -> c.getName().equals(name)).findFirst();
     }
+
 }
