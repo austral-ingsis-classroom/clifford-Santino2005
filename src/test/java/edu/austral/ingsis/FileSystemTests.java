@@ -5,28 +5,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FileSystemTests {
 
   private FileSystemRunner runner;
+
   @BeforeEach
-  void setUp(){
+  void setUp() {
     runner = new FileSystemRun();
   }
 
   private void executeTest(List<Map.Entry<String, String>> commandsAndResults) {
     final List<String> commands = commandsAndResults.stream().map(Map.Entry::getKey).toList();
     final List<String> expectedResult =
-            commandsAndResults.stream().map(Map.Entry::getValue).toList();
+        commandsAndResults.stream().map(Map.Entry::getValue).toList();
 
     final List<String> actualResult = runner.executeCommands(commands);
 
     for (int i = 0; i < expectedResult.size(); i++) {
-      assertEquals(expectedResult.get(i), actualResult.get(i),
-              "Command error: " + commands.get(i));
+      assertEquals(expectedResult.get(i), actualResult.get(i), "Command error: " + commands.get(i));
     }
   }
 
@@ -50,7 +49,7 @@ public class FileSystemTests {
             entry("mkdir emily", "emily directory created"),
             entry("mkdir jetta", "jetta directory created"),
             entry("ls", "horace emily jetta"),
-            entry("cd emily", "moved to directory emily"),
+            entry("cd emily", "moved to directory /emily"),
             entry("pwd", "/emily"),
             entry("touch elizabeth.txt", "elizabeth.txt file created"),
             entry("mkdir t-bone", "t-bone directory created"),
@@ -64,7 +63,7 @@ public class FileSystemTests {
             entry("mkdir horace", "horace directory created"),
             entry("mkdir emily", "emily directory created"),
             entry("mkdir jetta", "jetta directory created"),
-            entry("cd emily", "moved to directory emily"),
+            entry("cd emily", "moved to directory /emily"),
             entry("touch elizabeth.txt", "elizabeth.txt file created"),
             entry("mkdir t-bone", "t-bone directory created"),
             entry("ls", "elizabeth.txt t-bone"),
@@ -81,10 +80,10 @@ public class FileSystemTests {
         List.of(
             entry("mkdir horace", "horace directory created"),
             entry("mkdir emily", "emily directory created"),
-            entry("cd horace", "moved to directory horace"),
+            entry("cd horace", "moved to directory /horace"),
             entry("mkdir jetta", "jetta directory created"),
             entry("cd ..", "moved to directory /"),
-            entry("cd horace/jetta", "moved to directory jetta"),
+            entry("cd horace/jetta", "moved to directory /horace/jetta"),
             entry("pwd", "/horace/jetta"),
             entry("cd /", "moved to directory /")));
   }
@@ -99,13 +98,14 @@ public class FileSystemTests {
 
   @Test
   void test6() {
-    executeTest(List.of(entry(
-            "cd ..", "moved to directory /"),
-            entry("mkdir pepito", "pepito directory created"),
-            entry("cd pepito", "moved to directory pepito"),
+    executeTest(
+        List.of(
             entry("cd ..", "moved to directory /"),
-            entry("ls", " a"),
-            entry("cd pepito", "moved to directory pepito")));
+            entry("mkdir pepito", "pepito directory created"),
+            entry("cd pepito", "moved to directory /pepito"),
+            entry("cd ..", "moved to directory /"),
+            entry("ls", "pepito"),
+            entry("cd pepito", "moved to directory /pepito")));
   }
 
   @Test
@@ -113,7 +113,7 @@ public class FileSystemTests {
     executeTest(
         List.of(
             entry("mkdir horace", "horace directory created"),
-            entry("cd horace", "moved to directory horace"),
+            entry("cd horace", "moved to directory /horace"),
             entry("touch emily.txt", "emily.txt file created"),
             entry("touch jetta.txt", "jetta.txt file created"),
             entry("ls", "emily.txt jetta.txt"),
@@ -126,7 +126,7 @@ public class FileSystemTests {
     executeTest(
         List.of(
             entry("mkdir emily", "emily directory created"),
-            entry("cd emily", "moved to directory emily"),
+            entry("cd emily", "moved to directory /emily"),
             entry("mkdir emily", "emily directory created"),
             entry("touch emily.txt", "emily.txt file created"),
             entry("touch jetta.txt", "jetta.txt file created"),
@@ -134,5 +134,16 @@ public class FileSystemTests {
             entry("rm --recursive emily", "emily removed"),
             entry("ls", "emily.txt jetta.txt"),
             entry("ls --ord=desc", "jetta.txt emily.txt")));
+  }
+
+  @Test
+  public void test9() {
+    executeTest(
+        List.of(
+            entry("cd .", "moved to directory /"),
+            entry("cd ..", "moved to directory /"),
+            entry("touch pepito.txt", "pepito.txt file created"),
+            entry("cd pepito.txt", "pepito.txt is a file"),
+            entry("cd /", "moved to directory /")));
   }
 }
